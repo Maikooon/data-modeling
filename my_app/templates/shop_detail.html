@@ -1,0 +1,71 @@
+
+<section class="hero is-fullheight is-default is-bold">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <div class="columns is-vcentered">
+                <div class="column is-5">
+                    <figure class="image is-1by1">
+                        <img src="{{url_for('static', filename='pict/'+emp.pict)}}" alt="Description">
+                    </figure>
+                </div>
+                <div class="column is-6 is-offset-1">
+                    <h1 class="title is-2">
+                        {{emp.foodName}}
+                    </h1>
+                    <br>
+                      <div class="content">
+                        <p><strong>Salary:</strong> {{emp.price}}</p>
+                        <p><strong>Birth Year:</strong> {{emp.kcal}}</p>
+                       
+                      </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div class="columns is-vcentered">
+                    <div class="column">
+                            <a href="{{ url_for( 'food' ) }}" class="button is-link is-light">Back</a>
+                    </div>
+                    <div class="column">
+                            <a href="{{ url_for( 'emp_edit', id=emp.id) }}" class="button is-link is-light">Edit</a>
+                    </div>
+                    <div class="column">
+                            <a href="{{ url_for( 'emp_delete' , id=emp.id) }}" class="button is-danger is-light">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- /employee/<id>/delete へのGETでもこのページが表示される。その場合、モーダルを表示する。 -->
+    {% if request.url.endswith("delete") %}
+    <div class="modal is-active">
+        <div class="modal-background"></div>
+            <div class="modal-card">
+              <header class="modal-card-head">
+                <p class="modal-card-title">Caution!</p>
+                <a class="delete" aria-label="close" href="{{ url_for( 'food_master', id=emp.id) }}"></a>
+              </header>
+              <section class="modal-card-body">
+                Are you really sure you want to remove {{emp.name}}?
+              </section>
+              <footer class="modal-card-foot">
+                <form action="{{url_for('emp_delete',id=emp.id)}}" method="POST" enctype="multipart/form-data">
+                    <!-- DeleteをクリックするとPOSTされる -->
+                    <button class="button is-danger" type="submit" name="submit_button" >Delete</button>
+                    <!-- Cancelは元のページに戻る -->
+                    <a class="button" href="{{ url_for( 'food_master', id=emp.id) }}">Cancel</a>
+                </form>
+              </footer>
+        </div>
+    </div>
+    {% endif %}
+
+</section>
+<script>
+    $("#announce").delay(2000).slideUp();
+</script>
+
+<!-- //現在選択している店舗IDからドリンクを検索する、つまり、Sjop_Food とFood テーブルを組み合わせて、IDからFood の名前を参照できるようにする。 -->
+
+SELECT + FORM drink  JOIN shop_drink sd ON sd.drink_id = drink.id WEHRE sd.shop_id =,     
+<!-- 同じことをDrinkに対しても行う -->

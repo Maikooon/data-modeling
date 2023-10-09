@@ -1,0 +1,403 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<!-- flashメッセージを表示させる。flashメッセージにはカテゴリを設定できる。 -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+        {% if category == "error" %}
+            <div class="notification is-danger is-light">
+        {% else %}
+            <div class="notification is-success">
+        {% endif %}
+                <button class="delete"></button>
+                {{ message }}
+            </div>
+    {% endfor %}
+    {% endif %}
+{% extends "layout.html" %}
+
+{% block body %}
+
+<!-- flashメッセージを表示させる -->
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div id="announce" class="notification is-primary">
+        <button class="delete"></button>
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+<head>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+    <div class="flex">
+      <figure class="image">
+       <img src="{{url_for('static', filename='pict/'+user.pict)}}" alt="Employee" loading="lazy" style="object-fit: cover; width: 400px; height: 400px;">
+      </figure>
+  <div class="right">
+     <p class="title is-3"><font size ="6">Your Profile</font></p>
+           <p class="title is-5" style="line-height: 0.1;">
+                Username
+            </p>
+            <div class="content" style="line-height:0.1;"> 
+                {{user[0]}}
+            </div>
+	    <p class="title is-5" style="line-height: 0.1;">
+                Birthday
+            </p>
+            <div class="content" style="line-height:0.1;"> 
+               {{user[2]}}
+            </div>
+	    
+  </div>
+  </div>
+  </div>
+    <br>
+    <br>
+
+
+<!-- ここでタブにしてお気に入りを見れるようにする -->
+<ul class="tab-container">
+  <li>
+    <input class="tab-toggle" id="tab-1" type="radio" name="toggle" checked /> 
+    <label data-title="Tab 1" class="tab l-b" for="tab-1">Favorie Food</label>            
+    <ul class="tab-content-container">
+      <li class="tab-content">
+	------------------------------------------------------------Your Favorite Drink♥♥---------------------------------------------------------------------------------------
+        T hese are your favorite food !    Try it
+        This is a testing text to test the tab content container. Lorem Ipsum dolor sit amet!
+	      {% for i in okini %}
+                {{i.drinkName}} 
+	      {% endfor %}
+           <div class="arrows">
+          <label class="back" for="tab-4">&#8249;</label>
+          <label class="next" for="tab-2">&#8250; </label>   
+        </div>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <input class="tab-toggle" id="tab-2" type="radio" name="toggle" />
+    <label class="tab" for="tab-2">Favorite Drink</label> 
+    <ul class="tab-content-container">
+      <li class="tab-content">
+           ------------------------------------------------------------Your Favorite Food ♥♥---------------------------------------------------------------------------------------
+	{% for i in favfood %}
+                 <p> {{i.foodName}} </p>
+	{% endfor%}
+        <div class="arrows">
+          <label class="back" for="tab-1">&#8249;</label>
+          <label class="next" for="tab-3">&#8250; </label>   
+        </div>   
+      </li>
+    </ul>
+  </li>
+  <li>
+    <input class="tab-toggle" id="tab-3" type="radio" name="toggle"/>        
+    <label class="tab" for="tab-3">Tab 3</label> 
+    <ul class="tab-content-container">
+      <li class="tab-content">
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        <div class="arrows">
+          <label class="back" for="tab-2">&#8249;</label>
+          <label class="next" for="tab-4">&#8250; </label>   
+        </div>
+      </li>
+    </ul>    
+  </li>
+  <li>
+    <input class="tab-toggle" id="tab-4" type="radio" name="toggle"/>     
+    <label class="tab" for="tab-4">Tab 4</label> 
+    <ul class="tab-content-container">
+      <li class="tab-content">
+        This is the final content for the tab example.
+        <div class="arrows">
+          <label class="back" for="tab-3">&#8249;</label>
+          <label class="next" for="tab-1">&#8250; </label>   
+        </div>
+      </li>  
+    </ul>  
+  </li>
+</ul>
+
+
+<!--jjjjjjjjjjjjjjjj-->
+  <style>
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+    }
+
+body {
+  background-image: url("../static/pict/cardback.png");
+  background-size: cover;
+}
+    .tab-container {
+      list-style-type: none;
+      padding: 0;
+      margin: 60px auto;
+      max-width: 1000px;
+      position: relative;
+      background: #fff;
+      display:1000px;
+      margin:0 auto;
+      margin-top:0px;
+    }
+
+    .tab-container ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .tab-container .arrows {
+      display: block;
+      width: 60px;
+      font-size: 32px;
+      bottom: 50px;
+      right: 0px;
+      position: absolute;
+    }
+
+    .tab-container .arrows label {
+      display: inline-block;
+      cursor: pointer;
+      color: #aaa;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      margin-left: 5px;
+    }
+
+    .tab-container .arrows label:hover {
+      color: #333;
+    }
+
+    .tab-container .tab-content-container {
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+      height: 0;
+      opacity: 0;
+      overflow: hidden;
+      max-width:1000px;
+      line-height: 22px;
+      background: #fff;
+      position: absolute;
+      top: 42px;
+      padding: 0px 40px 0 20px;
+      border: 2px solid #446CB3;
+      border-top: 0;
+      box-shadow: 0 5px 5px -5px #333;
+    }
+
+    .tab-container .tab-content-container .tab-content {
+      opacity: 0;
+      padding: 15px 0;
+      min-height: 185px;
+      transition: opacity 0.1s ease-in;
+    }
+
+    .tab-container .tab {
+      outline: 0;
+      float: left;
+      cursor: pointer;
+      opacity: 1;
+      width: 25%;
+      line-height: 40px;
+      display: block;
+      margin: 0;
+      position: relative;
+      background: #446CB3;
+      color: #fff;
+      text-align: center;
+      border-top: 2px solid #446CB3;
+      border-right: 2px solid #446CB3;
+    }
+
+    .tab-container .tab.l-b {
+      border-left: 2px solid #446CB3;
+    }
+
+    .tab-container .tab:hover {
+      background: #365690;
+    }
+
+    .tab-container .tab-toggle {
+      display: none;
+    }
+
+    .tab-container .tab-toggle.active + .tab,
+    .tab-container .tab-toggle:checked + .tab {
+      background: #fff;
+      color: #333;
+    }
+
+    .tab-container .tab-toggle.active ~ .tab-content-container,
+    .tab-container .tab-toggle:checked ~ .tab-content-container {
+      height: auto;
+      opacity: 1;
+    }
+
+    .tab-container .tab-content-container .tab-content {
+      opacity: 1;
+    }
+ </style>
+
+<style>
+
+.flex {
+  display: flex;
+}
+
+.container {
+  padding: 10px; /* 外側の余白を設定 */
+}
+
+.flex .image {
+  width: 450px;
+  margin: 0px;
+  padding: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.flex .right {
+  margin: 0 0 0 20px;
+  padding: 10px;
+}
+
+.flex .title {
+  margin: 20px;
+  padding: 20px;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.flex .text {
+  margin: 10px 10px 10px;
+  padding: 0;
+}
+
+body {
+  background-image: url("../static/pict/cardback.png");
+  background-size: cover;
+}
+</style>
+
+
+
+
+<style>
+body {
+  background-image: url("../static/pict/cardback.png");
+  background-size: cover;
+}
+</style>
+<!-- notificationを自動的に閉じる -->
+<script>
+    $("#announce").delay(2000).slideUp();
+</script>
+{% endblock %}
+
+{% endwith %}
+
+<!-- 検索フォーム -->
+<section class="section">
+    <div class="container">
+        <label class="label">Employee search</label>
+        <form action="{{url_for('employee')}}" , method="POST">
+            <div class="level">
+                <!-- Left side -->
+                <div class="level-left">
+                    <div class="level-item">
+                        <div class="field has-addons">
+                            <p class="control">
+                                <input class="input" type="text" placeholder="Name" name="name" value="{{query_name}}">
+                            </p>
+                            <p class="control">
+                                <button class="button">
+                                    Search
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right side -->
+                <div class="level-right">
+                    <div class="level-item">
+                        <p class="subtitle is-5">
+                            <strong>{{ counts }}</strong> entries
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- 各従業員のカード -->
+<!-- セクションの開始 -->
+<section class="section">
+    <div class="container">
+        <!-- 複数行にわたって折り返される -->
+        <div class="columns is-multiline">
+                {% for emp in elist %} <!-- for文でelistで受け取った各従業員についてカードを出力 -->
+                <!-- カラムが全体の俺ぐらいの範囲を占めるのか、ここでは1/3 -->
+            <div class="column is-one-third">
+                <!-- カードをクリックしたときのとび先を設定している、 従業員のIDを渡して遷移するリンク-->
+                <a href="{{url_for('emp_master', id=emp.id)}}">
+            <!-- ここからカード -->
+                <div class="card">
+                    <!-- カードのイメージ -->
+                    <div class="card-image">
+                        <!-- 写真の大きさ比 -->
+                        <figure class="image is-1by1">
+                            <!-- static内のファイルアクセスはこのように行う -->
+                            <img src="{{url_for('static', filename='pict/'+emp.pict)}}" alt="Employee" loading="lazy" style="object-fit: cover; width: 200px; height: 200px;">
+
+                        </figure>
+                    </div>
+                    <!-- カードの内容 -->
+                    <div class="card-content">
+                        <div class="media">
+                            <div class="media-content">
+                                <!-- 従業員の名前 -->
+                                <p class="title is-4">{{emp.name}}</p>
+                                <!-- マネージャをクリックするとマネージャのページに飛ぶようにする -->
+                                <a href="{{url_for('emp_master', id=emp.manager)}}">
+                                    <!-- サブタイトル的に他の要素を記述するもの -->
+                                    <p class="subtitle is-6">Manager: {{emp.manager_name}}</p>
+                                </a>
+                            </div>
+                        </div>
+                        <!-- カードを押した後の話 -->
+                        <div class="content">
+                            <p><strong>Salary:</strong> {{emp.salary}}</p>
+                            <p><strong>Birth Year:</strong> {{emp.byear}}</p>
+                            <p><strong>Start Year:</strong> {{emp.syear}}</p>
+                        </div>
+                    </div>
+                </div>
+                </a>
+            </div>
+                {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- notificationを自動的に閉じるjavascript -->
+<script>
+    $(".notification").delay(2000).slideUp();
+</script>
+
+{% endblock %}

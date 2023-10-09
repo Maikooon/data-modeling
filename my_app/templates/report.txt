@@ -1,0 +1,271 @@
+
+
+【第三回からの変更点】 　
+データベースの変更点としては、大きく３つのテーブル、LoginUser,Favorites,Favoritesfoodの3つの追加をした。
+LoginUserテーブルはカラムとして、usename,password,birth(好きなもの、始め誕生日にしていたためこの名前だが後から変更した),pict(プロフィール用写真)を持ち、ホームぺージに新しくログインするユーザ‐
+の情報を格納したり、途中でユーザーが自分の情報を変更したい時に使用する。
+さらに残りの２つは、FavoritesとFavoritesfoodであるが、これはそれぞれdrinkとfoodのお気に入り情報を格納しておくためのものである。
+というのも、今回はdrink,foorのいずれにおいても詳細ページからボタンを押すことによって、お気に入りの設定をすることができるようにした。
+この時にお気に入りに登録した情報を保存し、Mypage で参照する際に使用することができるようにするためにこれらの2つのテーブルを定義した。
+<br>
+create table LoginUser (<br>
+	username varchar,<br>
+	password varchar,
+	birth varchar,
+	pict varchar 
+);
+
+CREATE TABLE Favorites (
+    user_id varchar,
+    drink_id varchar
+);
+
+CREATE TABLE Favoritesfood (
+    user_id varchar,
+    food_id varchar
+);
+
+
+【アプリのエンドポイント】
+
+ 必要に応じて、MVTモデルに則った、Webアプリ、データベース、テンプレートの各画面での役割について説明する。 また、Webアプリやデータベース接続のセキュリティ向上のための工夫、フォームバリデーションやユーザインターフェイスに関する工夫があれば併せて報告する。
+
+＠エラー処理やバリデーション　　　
+§ ＠セキュリティー対策   メンバー登録、
+
+§ ビューの利用
+§ トランザクション　　　　report　以外きちんとログインしたら
+
+
+【実装上の工夫】
+ログインした状態ではないと、Home画面以外のページがみれない為、初回に使用する時は新たにSignupする必要がある。
+プロフィールの画像はStatic/pictに格納されている画像(例えば、1.png)を用いればよい。
+
+
+@app.route('/')
+この画面は、このホームページに記載されている全てのカテゴリを写真と文章で説明しており、それぞれに適切な写真が挿入されている。
+・SQL文　　　
+ユーザーのログイン情報を取得　　
+'SELECT * FROM LoginUser WHERE username = ?'
+・工夫した点　　
+各画面のイメージ画像を置くことでHome画面でホームページの全体像が分かるようにした。また、今回のテーマにあった画像を選ぶことで全体に統一感を与えた。
+ユーザーインターフェースに関して、情報の強度が均一である時に有効だとされるZ型、ユーザーの視線が左上→右上→左下、右下と移動することに焦点を当てた型、に倣って画像やテキストを配置した。
+
+
+@app.route("/food", methods=["GET", "POST"])
+この画面では、Foodの一覧画面である。
+デフォルトでは、全ての食べ物が表示されており、一番上に検索欄が設けられている。
+検索フォームでは、文字を入れることで調べたいFoodが検索でき、絞り込まれた後に表示されているFoodの数は集約関数であるcountを用いることで
+画面上部の右側に　〇entries　の〇の部分に数字が出力されるようにした。
+・SQL文
+検索された時に実行されるSQL
+SELECT * FROM food WHERE food.foodName LIKE ? ORDER BY food.id
+・工夫した点
+　ユーザーインターフェースという観点から、まず、一番の部分に画像を入れることでHome画面との統一感を生み出した。
+また、それぞれのFoodのカードは、ユーザーの視線が、左上→右上→少し下に下がって左→右→下　と動くことを配慮してF型に配置した。
+商品ページや記事ページの多くが「F型」レイアウトになっているという。
+
+
+@app.route("/food/<id>")
+@app.route("/add_favoritefood", methods=['POST'])
+このページはそれぞれのトップページから各foodを押すことによって表示されるページであり、そのタップされた写真、名前、逸れに関関する様々な情報(値段やカロリーなど)のデータベースで同じテーブル上に格納されている情報を取得して示している。
+さらに、Foodページにおいては、FoodとDrinkにも合う組み合わせが存在するため、FooddetailではそのFoodにあうDrinkを、ページ下部に示し、その部分を押すと、提示された商品のdetailページに飛ぶことが出来る。
+また、お気に入り登録ボタンがあるため、そのボタンを押すと、商品がお気に入り登録され、Mypage に反映される。ただし、そのボタンは一回しか押すことが出来ず、2回目以降は
+「既に登録されています」というメッセージが出る。
+・SQL文
+FoodのIDの取得
+SELECT * FROM food f WHERE f.id = ?
+お気に入りドリンクの取得
+SELECT * FROM drink d  JOIN  drink_food df ON df.drink_id=d.id  WHERE  df.food_id = ?
+
+・工夫した点
+インターフェースの観点では、まず、頭にFoodページと同じ大きさの画像を張り付けることで全体に統一感を持たせた。というのも、このような統一感は
+ユーザーにとって今している動作を把握し、使いやすさにも影響すると考えたためである。
+また、ページ中央左にbackボタンを付けることで自然にFoodのページに繋がるようにした。
+お気に入り設定においては、データベースの挿入を行った。具体的には、まず、ユーザーがボタンをクリックすると、JavaScriptがAjaxリクエストを生成し、サーバーにお気に入りの食べ物のIDを送信する。サーバー側では、送信されたIDを受け取り、データベースにお気に入りの食べ物として追加する。
+このデータベースに格納される部分は、Favorite　というデータベースにユーザーのIDに対応するお気に入りの食べ物を保存することで後での参照を可能にした。
+また、ここでは、Ajaxを使用して非同期にデータベースにデータを追加しているため、ページがリロードされなくとも、にデータの追加が行われ、データベースへの追加が成功した場合は、「お気に入りに追加しました」と、既に同じお気に入りが登録されている場合は、「既に登録されています」というテキストを表示するようにした。
+
+
+@app.route("/drink", methods=["GET", "POST"])
+@app.route("/add_favorite", methods=['POST'])
+この画面もドリンクの一覧と検索の仕組みはFood画面と同じであり、デフォルトではすべてのドリンクが表示されている。
+検索と　もFood画面と同様である。
+ここでは、さらに、drink type　という欄があり、All,Coffee,Tea,Frapというボタンが存在する。
+これは、それぞれのドリンクのタイプを表しており、例えば、Coffeeのボタンを押すと、カテゴリがCoffeeであるドリンクのィが表示されるようになっている。
+・SQL文
+絞り込みボタンが押された時のそれぞれの処理
+SELECT * FROM drink
+SELECT * FROM drink WHERE drink.TypeTempId = 'Cof1' OR drink.TypeTempId = 'Cof2' ORDER BY drink.id
+SELECT * FROM drink WHERE drink.TypeTempId = 'Tea1'  OR drink.TypeTempId = 'Tea2' ORDER BY drink.id
+SELECT * FROM drink WHERE drink.TypeTempId = 'Frap'  ORDER BY drink.id
+検索に必要なSQL
+SELECT * FROM drink WHERE drink.drinkName LIKE ? ORDER BY drink.id
+SELECT * FROM drink
+
+・工夫した点
+これは、Food画面と同様であるが、一番上にドリンクを連想させる画像を配置することで全体の統一感と、その画面をみた時に
+何を示しているのかを分かりやすくした。カードの配列方法はfoodと同じ理由である。
+また、Foodではなかったが、Drinkではカテゴリによって絞り込みのボタンを付けることで、比較的種類の多いDrinkの中からユーザーが効率的に目的のDrinkを探すことができるようにした。
+お気に入りボタンはfoodと同様に実装した。
+
+
+Drinkdetailpage
+@app.route("/drink/<id>", methods=['GET', 'POST'])
+このページはそれぞれのトップページから各ドリンクを押すことによって表示されるページであり、そのタップされた写真、名前、逸れに関関する様々な情報(値段やカロリーなど)のデータベースで同じテーブル上に格納されている情報を取得して示している。
+さらに、特定のDrinkに合うFoodが存在するため、そのdrnikを、ページ下部に示し、その部分を押すと、提示された商品のdetailページに飛ぶことが出来る。
+また、お気に入り登録ボタンがあるため、そのボタンを押すと、商品がお気に入り登録され、Mypage に反映される。ただし、そのボタンは一回しか押すことが出来ず、2回目以降は
+「既に登録されています」というメッセージが出るようエラー処理を行った。
+・SQL文
+お気に入りに格納するSQL
+INSERT INTO Favorites (user_id, drink_id) VALUES (?, ?)
+詳細情報の取得
+SELECT * FROM drink d WHERE d.id = ?
+
+・工夫した点
+FoodDetailPageと同じ。
+SELECT * FROM topping t JOIN drink_topping dt ON t.id = dt.topping_id WHERE dt.drink_id = ?
+SELECT * FROM food f JOIN  drink_food df ON df.food_id=f.id  WHERE  df.drink_id = ?
+
+
+
+Shop画面
+@app.route("/shop", methods=["GET", "POST"])
+この画面では、一覧、検索、そして絞り込みボタンのすべてにおいてDrink画面と同じ仕様である。
+今回の絞り込みは、渡欧府県別である点のみ異なる点である。
+・SQL文
+絞り込みボタンが押された時の処理
+SELECT * FROM shop JOIN region ON shop.region_id = region.id WHERE region.regionName = '北海道' ORDER BY shop.id
+SELECT * FROM shop JOIN region ON shop.region_id = region.id WHERE region.regionName = '東京' ORDER BY shop.id
+SELECT * FROM shop JOIN region ON shop.region_id = region.id WHERE region.regionName = '愛知' ORDER BY shop.id
+SELECT * FROM shop JOIN region ON shop.region_id = region.id WHERE region.regionName = '京都' ORDER BY shop.id
+
+検索ボタンが押された時の処理
+SELECT * FROM shop  WHERE shop.shopName LIKE ? ORDER BY shop.id
+SELECT * FROM shop
+
+・工夫した点
+これは、Drink画面と同様である。
+
+shopdetailpage
+@app.route("/shop/<id>")
+このページはそれぞれのトップページから各店舗を押すことによって表示されるページであり、そのタップされた写真、名前、それに関関する様々な情報(所在する都道府県など)のデータベースで同じテーブル上に格納されている情報を取得して示している。
+さらに、店舗で販売されているDrinkとFoodには店舗によって少しずつ違いがあるため、ページの下部に、その店舗で取り扱っているdrinkとfoodを記載した。
+・SQL文
+詳細情報の取得
+SELECT * FROM  shop s  WHERE s.id = ?
+SELECT *  FROM region r WHERE r.id = ?
+SELECT *  FROM ShopType st WHERE st.id = ?
+SELECT * FROM drink  JOIN shop_drink sd ON sd.drink_id = drink.id WHERE sd.shop_id =?
+SELECT * FROM food  JOIN shop_food sf ON sf.food_id = food.id WHERE sf.shop_id =?
+・工夫した点
+FoodDetailPageと同じ。
+
+
+
+@app.route('/Mypage')
+この画面では、自分のユーザー情報、具体的には、名前と誕生日、プロフィール画像の閲覧、それの編集、さらにユーザー情報自体を削除することも可能である。
+また、ページ下部には、表が表示されており、表のタブを選択することで、自分がお気に入り登録したfood、Dorinkをそれぞれ見ることが出来る。
+・SQL文
+マイページで表示するそれぞれの情報をの取得
+SELECT * FROM Favorites"
+SELECT * FROM LoginUser WHERE username = ?
+SELECT * FROM Favorites f JOIN drink ON drink.id = f.drink_id WHERE f.user_id = ?
+SELECT * FROM Favoritesfood ff JOIN food ON food.id=ff.food_id  WHERE user_id = ?
+・工夫した点
+表示する項目を羅列するのではなく、ボタンで切り替えるようにすることで見やすさを重視した。
+
+
+
+@app.route("/edit_user", methods=["GET", "POST"]) 
+Mypageの編集ページでは、自分のユーザー情報を編集することが出来る。
+具体的には、ログインしているユーザーの情報をとってきた上で、表示する。
+それぞれ再入力することができるようにするが、画像などに対してはバリエーションを行い、条件を満たしたら、SQL文によってDBに書き込みを行う。
+・SQL文
+データの取得
+SELECT * FROM LoginUser WHERE username = ?
+データの更新
+UPDATE LoginUser SET birth=?, pict=? WHERE username=?
+・工夫した点
+好きなものやプロフィール画像は多くのSNSアプリでも変更画面が設けられているため、それに倣い、このようなページを設けることで
+最新の情報を共有することができるようにした。
+
+
+@app.route("/delete_user", methods=["GET", "POST"])
+Mypage において、Deleteボタンを押すことでそのユーザーの情報を削除することが出来る。
+ここで、誤操作を防ぐために、確認画面を設け、二段階の確認を行った。
+・SQL文
+SELECT username FROM LoginUser L WHERE L.username = ?
+DELETE FROM LoginUser WHERE username = ?
+・工夫した点
+削除に関しては、間違えて押してしまうことがあるため、二段階認証を分かりやすく設け、
+誤操作を防ぐという工夫をした。
+
+@app.route('/report')
+ここには、今回のレポート記載している。
+ただ、ログインしないとみることが出来ない。
+・SQL文
+なし
+・工夫した点
+レポートはどしても文字数が多くなってしまうので、HTMMLでタイトルなどを設定して視覚的に読みやすくなるよう工夫した。
+
+
+@app.route('/login', methods=['GET', 'POST'])
+その時ログインしていなければ、ログインまたはのサインアップのページになる。
+ログアウトしていた時は、このページにより、既存ユーザーとしてログインするか、もしくは、新しいユーザーとして登録することが出来る。
+・SQL文
+ユーザーのパスワードとユーザーネームの認証
+'SELECT * FROM LoginUser WHERE username = ? AND password = ?'
+・工夫した点
+Loginするにあたっては、サインインの時にパスワードをハッシュ値にした後にデータベースに格納したため、ハッシュ値変換前のパスワードに戻す作業を行うことで、
+セキュリティ面での安全性を担保した。
+
+
+@app.route('/logout')
+このページはその時ユーザーがログインしていれば、ログアウトされ、SignupまたはLoginの画面が表示される。
+Loginしている時には、Logoutしてその時のユーザーをログアウトし、他のユーザーとしてログインすることが可能になる。
+・SQL文
+なし
+・工夫した点
+
+
+@app.route('/signup', methods=['GET', 'POST'])
+この画面においては、新たなユーザーを追加することが出来る。ユーザーの登録には、ユーザー名、パスワード、好きなもの、プロフィール写真を登録することとした
+・SQL文
+ユーザー情報がすでにDBに登録されているかの確認
+'SELECT * FROM LoginUser WHERE username = ?'
+新規のユーザーのDBへの挿入
+INSERT INTO LoginUser (username, password,birth,pict) VALUES (?, ?,?,?)'
+・工夫した点
+まず、新規のユーザーを次々に追加していく必要があったので、LoginUserというテーブルをデータベースに作ることで、多くのユーザーの参照と蓄積を可能にした。
+さらに、バリデーションという観点から、username、passwordは３文字以上になるようにバリデーションを設け、ユーザーの登録にミスが起きないように考慮した。
+また、全てを必須項目として、入力形式が間違っているか、もしくは未入力の部分がある場合にはそれに応じたエラーメッセージをそれぞれ表示した。
+これらの要件を全てクリアして、新規のユーザーを登録することになった場合は、セキュリティの観点から、ユーザーのパスワードは機密性の高いものであるため、格納する時にハッシュ値に変換してから
+格納することで安全性を担保した。
+
+【考察・感想】
+　今回の課題のように、データベースの設計からアプリのデザイン決定、そして実装まで全て自分一人で行った経験は初めてだった。
+実際、インターンなどでは共同開発によりFlutter を用いてフロントには触れているものの、HTMLやCSS,さらにはFlaskなどは触るのが初めてであり、
+初めての言語ということで言語の根本的な理解から行った。感想としては、初めは全く分からず難しかったが、
+毎日繰り返すことで知識量が少しずつ増えていき、最終的にはデータの参照方法はもちろん、UIなどを考えながら楽しんで作ることが出来た。
+まず、データベースの作成、及び応用という観点からすると、このデータベモデリングの授業を通してSALの基本からその応用まで学ぶことが出来た。
+初めは、SQLの定義式やテーブルの操作なども分からなかったが、最終的に今回のアプリのように自分のデータベースを用いてアプリをつかうことが出来たので、
+正規化の必要性やテーブル結合の必要性、ビューの必要性も身をもって感じることができ、今後データベースを作成する際にも最終的に何をしたいのか、何を作りたいのか、
+アプリの作成という観点から見ると、作成には今迄の知識を総動員したと思う。というのも、本課題の中枢であるデータベースから値を引っ張ってくることは、ＳＱＬの知識やFlaskの知識、さらには、Pythonの
+知識も必要ですべてを調べることで知識量を補いながら補完することが出来た。
+さらに、一つのアプリであるので、ヒューマンインタフェースを考える必要もあり、これも授業では履修していたが、実践するのは初めてだったので、配置やボタンなどそれらの知識を
+活かすことが出来たと思う。
+　反省点としては、途中で格納するものを変えたため、データベースの名前と実際に入るデータが異なること、また、作成したデータベースをすべて使用しなかったことである。後者に関しては、一度
+使用して追加してみたものの、ＵＩや使いやすさの観点から絞り込みが多過ぎると混乱すると判断したため、今回のような機能のみを搭載することとした。今後は、最終的なアプリの形式をより具体的にイメージすることで
+このようなことがないよう、失敗を活かしたいと思った。
+　以上のように、最終課題は簡単なものではなかったが、これまでの知識を実践すると同時に、SQLのに関する理解も深まり、最終的には非常に興味を持つことが出来たので良かった。
+今後、いずれの分野においてもこのような基本的なバックエンドの知識やアプリ開発技術は必要になってくると感じるため、
+今回つまずいてしまった部分や学習した点を今後に生かしていきたいと思った。
+
+
+
+
+
+
+
+
